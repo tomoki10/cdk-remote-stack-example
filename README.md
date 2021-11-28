@@ -10,6 +10,8 @@ Check the repository below for details.
 
 In this sample, I will use Budget Alert in us-east-1 region to refer to SNS Topic in ap-northeast-1 region.
 
+# Getting Started
+
 ### Bootstrap
 
 If you have not yet configured bootstrap for each region, use the following command to do so. `123456789012` is a AWS account ID.
