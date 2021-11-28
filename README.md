@@ -1,14 +1,26 @@
-# Welcome to your CDK TypeScript project!
+# cdk-remote-stack example
 
-This is a blank project for TypeScript development with CDK.
+This repository is sample implementation of cdk-remote-stack. cdk-remote-stack is a service that enables cross-stack references between regions, etc.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+Check the repository below for details.
 
-## Useful commands
+[cdk-remote-stack](https://github.com/pahud/cdk-remote-stack)
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
+## Example Contents
+
+In this sample, I will use Budget Alert in us-east-1 region to refer to SNS Topic in ap-northeast-1 region.
+
+### Bootstrap
+
+If you have not yet configured bootstrap for each region, use the following command to do so. `123456789012` is a AWS account ID.
+
+```
+% npx cdk bootstrap aws://123456789012/ap-northeast-1 -c environment=dev
+% npx cdk bootstrap aws://123456789012/us-east-1 -c environment=dev
+```
+
+### Deploy
+
+```
+% npx cdk deploy --all -c environment=dev --require-approval never
+```

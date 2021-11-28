@@ -1,21 +1,31 @@
 #!/usr/bin/env node
-import 'source-map-support/register';
-import * as cdk from '@aws-cdk/core';
-import { CdkRemoteStackExampleStack } from '../lib/cdk-remote-stack-example-stack';
+import "source-map-support/register";
+import * as cdk from "@aws-cdk/core";
+import * as ssm from "@aws-cdk/aws-ssm";
+
+import { CostAlertTopicStack } from "../lib/cost-alert-topic-stack";
+import { CostAlertStack } from "../lib/cost-alert-stack";
 
 const app = new cdk.App();
-new CdkRemoteStackExampleStack(app, 'CdkRemoteStackExampleStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+const envKey = app.node.tryGetContext("environment");
+const envVals = app.node.tryGetContext(envKey);
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
-
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
-
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+// Cost Topic
+const costAlertTopicStack = new CostAlertTopicStack(app, `CostAlertTopicStack`, {
+  costNotifyEmail: envVals.costNotifyEmail,
 });
+
+const parameterPath = `/${envVals.env.accountId}/${envVals.env.region}/${costAlertTopicStack.stackName}`;
+
+new ssm.StringParameter(costAlertTopicStack, `TopicArn`, {
+  parameterName: `${parameterPath}/topicArn`,
+  stringValue: costAlertTopicStack.alarmTopic.topicArn,
+});
+
+// Cost Monitoring
+const costAlertStack = new CostAlertStack(app, `CostAlarmStack`, {
+  costAlertTopicParam: parameterPath,
+  costAlertTopicRegion: envVals.env.region,
+  env: { account: envVals.env.accountId, region: "us-east-1" },
+});
+costAlertStack.addDependency(costAlertTopicStack);
